@@ -545,8 +545,15 @@ void* dci_decoder_thread(void* p){
 
 			uint64_t t1 = timestamp_us();        
 			dci_decoder_decode(dci_decoder, sf_idx,  sfn, data, &dci_per_sub);
-			uint64_t t2 = timestamp_us();        
+			uint64_t t2 = timestamp_us();
+			fprintf(stderr, "TTI: %u\n", tti);
 			fprintf(fd,"%d\t%ld\t\n", tti, t2-t1);
+			fprintf(fd, "snr_db: %f rsrp_db: %f noise_db: %f\n",
+				dci_decoder->ue_dl.chest_res.snr_db,
+				dci_decoder->ue_dl.chest_res.rsrp_dbm,
+				dci_decoder->ue_dl.chest_res.noise_estimate_dbm);
+			fprintf(fd, "\n");
+
 	//--->  Unlock the buffer
 			pthread_mutex_unlock(&sf_buffer[rf_idx][decoder_idx].sf_mutex);	
 #ifdef ENABLE_GUI
@@ -564,9 +571,11 @@ void* dci_decoder_thread(void* p){
 						if (isinf(csi_amp[rf_idx][g + i])) {
 							csi_amp[rf_idx][g + i] = -80;
 						}
+                        // fprintf(fd, "%f,", csi_amp[rf_idx][g+i]);
 					}
 					pthread_cond_signal(&dci_plot_cond[rf_idx]);
 					pthread_mutex_unlock(&dci_plot_mutex[rf_idx]);    
+                    // fprintf(fd, "\n");
 				}
 			}
 #endif

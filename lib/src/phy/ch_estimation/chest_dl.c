@@ -830,6 +830,20 @@ static int estimate_port(srsran_chest_dl_t*     q,
 
   chest_interpolate_noise_est(q, sf, cfg, input, ce, port_id, rxant_id);
 
+  if (port_id == 0 && rxant_id == 0) {
+    fprintf(stderr, "rsrp: %f rsrp_dbm: %f npilots: %d\nrsrp_per_re(%d): ",
+      q->rsrp[rxant_id][port_id], 
+      srsran_convert_power_to_dBm(q->rsrp[rxant_id][port_id]),
+      npilots, pthread_self());
+    for (int i = 0; i < npilots; i++) {
+      if (i % 8 == 0) {
+        float power = q->pilot_recv_signal[i] * conjf(q->pilot_recv_signal[i]);
+        fprintf(stderr, "%f ", power);
+      }
+    }
+    fprintf(stderr, "\n");
+  }
+
   return 0;
 }
 
@@ -1022,6 +1036,14 @@ int srsran_chest_dl_estimate_cfg(srsran_chest_dl_t*     q,
   }
 
   fill_res(q, res);
+
+  // let's only monitor port0 and rx-antenna0
+  fprintf(stderr, "avg_rsrp: %f avg_rsrp_dbm: %f "
+    "avg_noise: %f avg_noise_dbm: %f "
+    "port_num: %d rxant_num: %d\n",
+    res->rsrp, res->rsrp_dbm,
+    res->noise_estimate, res->noise_estimate_dbm,
+    q->cell.nof_ports, q->nof_rx_antennas);
 
   return SRSRAN_SUCCESS;
 }
